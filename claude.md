@@ -1,0 +1,1 @@
+Read @SPEC.md fully before any work. Its hard rules always apply.
