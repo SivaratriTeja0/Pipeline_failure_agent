@@ -120,6 +120,8 @@ class Settings(BaseModel):
 
 def validate_startup(settings: Settings) -> None:
     """Fail fast on unsafe configuration combinations (spec B5, L5)."""
+    if settings.auth_provider is AuthProviderName.DEMO and not settings.demo_mode:
+        raise ConfigurationError("AUTH_PROVIDER=demo requires DEMO_MODE=true (fixed demo principals are not real identities)")
     if settings.healing_execution_mode is ExecutionMode.LIVE:
         problems: list[str] = []
         if settings.auth_provider is AuthProviderName.DEMO:

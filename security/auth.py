@@ -81,6 +81,14 @@ class AuthProvider(ABC):
         Raises AuthProviderUnavailableError if the backend cannot be consulted.
         """
 
+    @abstractmethod
+    def lookup(self, principal_id: str) -> Principal | None:
+        """Current definition of a principal (re-checked before execution: does the approver
+        still hold the role?). None if unknown or disabled.
+
+        Raises AuthProviderUnavailableError if the backend cannot be consulted.
+        """
+
 
 # ----------------------------------------------------------------------------- demo
 
@@ -117,6 +125,9 @@ class DemoAuthProvider(AuthProvider):
             return None
         return self._principals.get(selected.strip())
 
+    def lookup(self, principal_id: str) -> Principal | None:
+        return self._principals.get(principal_id)
+
 
 # ----------------------------------------------------------------------------- token
 
@@ -142,6 +153,10 @@ class PrincipalStore(ABC):
     @abstractmethod
     def find_by_token_hash(self, token_hash: str) -> StoredPrincipal | None: ...
 
+    def find_by_id(self, principal_id: str) -> StoredPrincipal | None:
+        """Look a principal up by id. Stores that cannot must fail closed (raise)."""
+        raise LookupError(f"{type(self).__name__} does not support lookup by principal id")
+
 
 class InMemoryPrincipalStore(PrincipalStore):
     def __init__(self) -> None:
@@ -157,6 +172,20 @@ class InMemoryPrincipalStore(PrincipalStore):
             if hmac.compare_digest(known_hash, token_hash):
                 return stored
         return None
+
+    def find_by_id(self, principal_id: str) -> StoredPrincipal | None:
+        return next((s for s in self._by_hash.values() if s.principal.principal_id == principal_id), None)
+
+    def update(self, principal_id: str, *, roles: frozenset[Role] | None = None, disabled: bool | None = None) -> None:
+        """Change a principal's roles or disable it (ADMIN operation; Phase 5 exposes it)."""
+        for token_hash, stored in self._by_hash.items():
+            if stored.principal.principal_id == principal_id:
+                principal = stored.principal if roles is None else stored.principal.model_copy(update={"roles": roles})
+                self._by_hash[token_hash] = StoredPrincipal(
+                    principal=principal, token_hash=token_hash,
+                    disabled=stored.disabled if disabled is None else disabled)
+                return
+        raise KeyError(principal_id)
 
 
 def create_principal(
@@ -190,6 +219,16 @@ class TokenAuthProvider(AuthProvider):
         try:
             stored = self._store.find_by_token_hash(hash_token(token.strip()))
         except Exception as exc:  # backend failure must fail closed, never authenticate
+            _log.error("auth_store_unavailable", extra={"error": type(exc).__name__})
+            raise AuthProviderUnavailableError("principal store unavailable") from exc
+        if stored is None or stored.disabled:
+            return None
+        return stored.principal
+
+    def lookup(self, principal_id: str) -> Principal | None:
+        try:
+            stored = self._store.find_by_id(principal_id)
+        except Exception as exc:  # backend failure must fail closed
             _log.error("auth_store_unavailable", extra={"error": type(exc).__name__})
             raise AuthProviderUnavailableError("principal store unavailable") from exc
         if stored is None or stored.disabled:

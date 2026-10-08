@@ -1,1 +1,1 @@
-"""Read-only investigation tools and registry (Phase 2)."""
+"""READ-ONLY investigation tools and registry. Nothing here can mutate anything."""

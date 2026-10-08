@@ -6,6 +6,7 @@ cascade that cannot be explained yields no plan.
 """
 
 from collections.abc import Iterable
+from datetime import datetime
 
 from pydantic import BaseModel, Field
 
@@ -26,6 +27,7 @@ class TaskInstanceSnapshot(BaseModel):
     try_number: int | None = None
     state: str | None = None
     upstream_task_ids: list[str] = Field(default_factory=list)
+    end_date: datetime | None = None
 
     @property
     def key(self) -> tuple[str, int]:

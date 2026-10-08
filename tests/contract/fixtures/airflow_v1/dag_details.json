@@ -1,0 +1,60 @@
+{
+  "dag_id": "orders_daily",
+  "dag_display_name": "orders_daily",
+  "root_dag_id": null,
+  "is_paused": false,
+  "is_active": true,
+  "is_subdag": false,
+  "last_parsed_time": "2026-10-01T09:59:00+00:00",
+  "last_pickled": null,
+  "last_expired": null,
+  "scheduler_lock": null,
+  "pickle_id": null,
+  "default_view": "grid",
+  "fileloc": "/opt/airflow/dags/orders.py",
+  "file_token": "Ii9vcHQvYWlyZmxvdy9kYWdzL29yZGVycy5weSI.xyz",
+  "owners": [
+    "data-eng"
+  ],
+  "description": null,
+  "schedule_interval": {
+    "__type": "CronExpression",
+    "value": "0 10 * * *"
+  },
+  "timetable_description": "At 10:00",
+  "tags": [
+    {
+      "name": "sales"
+    }
+  ],
+  "max_active_tasks": 16,
+  "max_active_runs": 1,
+  "has_task_concurrency_limits": false,
+  "has_import_errors": false,
+  "next_dagrun": null,
+  "next_dagrun_data_interval_start": null,
+  "next_dagrun_data_interval_end": null,
+  "next_dagrun_create_after": null,
+  "max_consecutive_failed_dag_runs": 0,
+  "timezone": "Timezone('UTC')",
+  "catchup": false,
+  "orientation": "LR",
+  "concurrency": 16,
+  "start_date": "2026-01-01T00:00:00+00:00",
+  "dag_run_timeout": null,
+  "dataset_expression": null,
+  "doc_md": null,
+  "params": {
+    "region": {
+      "__class": "airflow.models.param.Param",
+      "value": "eu",
+      "description": null,
+      "schema": {}
+    }
+  },
+  "end_date": null,
+  "is_paused_upon_creation": null,
+  "last_parsed": "2026-10-01T09:59:00+00:00",
+  "template_search_path": null,
+  "render_template_as_native_obj": false
+}

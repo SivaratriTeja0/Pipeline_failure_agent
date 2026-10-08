@@ -1,0 +1,220 @@
+{
+  "scenario": "cascade_upstream_failed",
+  "label": "FAKE AIRFLOW (DEMO)",
+  "description": "sales_etl.extract fails (permission denied on source); downstream tasks are upstream_failed symptoms.",
+  "dags": [
+    {
+      "dag_id": "sales_etl",
+      "is_paused": false,
+      "is_active": true,
+      "fileloc": "/opt/airflow/dags/sales_etl.py",
+      "owners": [
+        "data-eng"
+      ],
+      "max_active_runs": 1,
+      "max_active_tasks": 16,
+      "has_import_errors": false,
+      "catchup": false,
+      "concurrency": 16,
+      "timezone": "UTC",
+      "params": {
+        "target_schema": "analytics",
+        "api_password": "never-exposed"
+      },
+      "tasks": [
+        {
+          "task_id": "extract",
+          "downstream_task_ids": [
+            "transform"
+          ],
+          "pool": "warehouse_pool",
+          "queue": "default",
+          "retries": 0,
+          "trigger_rule": "all_success",
+          "depends_on_past": false,
+          "is_mapped": false
+        },
+        {
+          "task_id": "transform",
+          "downstream_task_ids": [
+            "load"
+          ],
+          "pool": "warehouse_pool",
+          "queue": "default",
+          "retries": 0,
+          "trigger_rule": "all_success",
+          "depends_on_past": false,
+          "is_mapped": false
+        },
+        {
+          "task_id": "load",
+          "downstream_task_ids": [
+            "publish"
+          ],
+          "pool": "warehouse_pool",
+          "queue": "default",
+          "retries": 0,
+          "trigger_rule": "all_success",
+          "depends_on_past": false,
+          "is_mapped": false
+        },
+        {
+          "task_id": "publish",
+          "downstream_task_ids": [],
+          "pool": "default_pool",
+          "queue": "default",
+          "retries": 0,
+          "trigger_rule": "all_success",
+          "depends_on_past": false,
+          "is_mapped": false
+        }
+      ]
+    },
+    {
+      "dag_id": "inventory_sync",
+      "is_paused": false,
+      "is_active": true,
+      "fileloc": "/opt/airflow/dags/inventory_sync.py",
+      "owners": [
+        "data-eng"
+      ],
+      "max_active_runs": 1,
+      "max_active_tasks": 16,
+      "has_import_errors": false,
+      "catchup": false,
+      "concurrency": 16,
+      "timezone": "UTC",
+      "params": {},
+      "tasks": [
+        {
+          "task_id": "sync",
+          "downstream_task_ids": [],
+          "pool": "warehouse_pool",
+          "queue": "default",
+          "retries": 1,
+          "trigger_rule": "all_success",
+          "depends_on_past": false,
+          "is_mapped": false
+        }
+      ]
+    }
+  ],
+  "dag_runs": [
+    {
+      "dag_id": "sales_etl",
+      "dag_run_id": "scheduled__2026-10-06T00:00:00+00:00",
+      "state": "success",
+      "run_type": "scheduled",
+      "logical_date": "2026-10-06T00:00:00+00:00",
+      "start_date": "2026-10-07T00:00:05+00:00",
+      "end_date": "2026-10-07T00:09:40+00:00",
+      "external_trigger": false
+    },
+    {
+      "dag_id": "sales_etl",
+      "dag_run_id": "scheduled__2026-10-07T00:00:00+00:00",
+      "state": "success",
+      "run_type": "scheduled",
+      "logical_date": "2026-10-07T00:00:00+00:00",
+      "start_date": "2026-10-08T00:00:04+00:00",
+      "end_date": "2026-10-08T00:10:01+00:00",
+      "external_trigger": false
+    },
+    {
+      "dag_id": "sales_etl",
+      "dag_run_id": "scheduled__2026-10-08T00:00:00+00:00",
+      "state": "failed",
+      "run_type": "scheduled",
+      "logical_date": "2026-10-08T00:00:00+00:00",
+      "start_date": "2026-10-09T00:00:03+00:00",
+      "end_date": "2026-10-09T00:04:12+00:00",
+      "external_trigger": false
+    },
+    {
+      "dag_id": "inventory_sync",
+      "dag_run_id": "scheduled__2026-10-09T00:15:00+00:00",
+      "state": "success",
+      "run_type": "scheduled",
+      "logical_date": "2026-10-09T00:15:00+00:00",
+      "start_date": "2026-10-09T00:20:00+00:00",
+      "end_date": "2026-10-09T00:22:30+00:00",
+      "external_trigger": false
+    }
+  ],
+  "task_instances": [
+    {
+      "dag_id": "sales_etl",
+      "dag_run_id": "scheduled__2026-10-08T00:00:00+00:00",
+      "map_index": -1,
+      "max_tries": 0,
+      "pool": "warehouse_pool",
+      "queue": "default",
+      "operator": "PythonOperator",
+      "task_id": "extract",
+      "try_number": 1,
+      "state": "failed",
+      "start_date": "2026-10-09T00:00:05+00:00",
+      "end_date": "2026-10-09T00:00:40+00:00",
+      "duration": 35.0,
+      "hostname": "worker-1"
+    },
+    {
+      "dag_id": "sales_etl",
+      "dag_run_id": "scheduled__2026-10-08T00:00:00+00:00",
+      "map_index": -1,
+      "max_tries": 0,
+      "pool": "warehouse_pool",
+      "queue": "default",
+      "operator": "PythonOperator",
+      "task_id": "transform",
+      "try_number": 0,
+      "state": "upstream_failed",
+      "start_date": null,
+      "end_date": "2026-10-09T00:00:41+00:00",
+      "duration": null,
+      "hostname": null
+    },
+    {
+      "dag_id": "sales_etl",
+      "dag_run_id": "scheduled__2026-10-08T00:00:00+00:00",
+      "map_index": -1,
+      "max_tries": 0,
+      "pool": "warehouse_pool",
+      "queue": "default",
+      "operator": "PythonOperator",
+      "task_id": "load",
+      "try_number": 0,
+      "state": "upstream_failed",
+      "start_date": null,
+      "end_date": "2026-10-09T00:00:41+00:00",
+      "duration": null,
+      "hostname": null
+    },
+    {
+      "dag_id": "sales_etl",
+      "dag_run_id": "scheduled__2026-10-08T00:00:00+00:00",
+      "map_index": -1,
+      "max_tries": 0,
+      "pool": "default_pool",
+      "queue": "default",
+      "operator": "PythonOperator",
+      "task_id": "publish",
+      "try_number": 0,
+      "state": "upstream_failed",
+      "start_date": null,
+      "end_date": "2026-10-09T00:00:41+00:00",
+      "duration": null,
+      "hostname": null
+    }
+  ],
+  "logs": [
+    {
+      "dag_id": "sales_etl",
+      "dag_run_id": "scheduled__2026-10-08T00:00:00+00:00",
+      "task_id": "extract",
+      "map_index": -1,
+      "try_number": 1,
+      "content": "[2026-10-09T00:00:05+00:00] INFO - Starting attempt 1 of 1\n[2026-10-09T00:00:39+00:00] ERROR - Task failed with exception\nTraceback (most recent call last):\n  File \"/opt/airflow/dags/sales_etl.py\", line 12, in extract\n    rows = src.fetch()\npsycopg2.errors.InsufficientPrivilege: permission denied for table crm.orders\n"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "api": "Airflow stable REST API v1 (Airflow 2.10.x)",
+  "source": "airflow/api_connexion/openapi/v1.yaml (2.10.5) schemas: HealthInfo, VersionInfo, DAGDetail, TaskCollection, DAGRun, TaskInstanceCollection, TaskInstance",
+  "provenance": "AUTHORED FROM THE OPENAPI SCHEMA - NOT RECORDED FROM A LIVE AIRFLOW INSTANCE. Replace with responses recorded via demo/live_test before any LIVE use.",
+  "files": [
+    "dag_details.json",
+    "dag_run.json",
+    "health.json",
+    "pool_task_instances.json",
+    "task_instance.json",
+    "task_instances.json",
+    "task_log.txt",
+    "tasks.json",
+    "version.json"
+  ]
+}

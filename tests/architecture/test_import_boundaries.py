@@ -158,3 +158,45 @@ def test_dangerous_call_checker():
     assert sc.dangerous_call_lines("import os\nos.system('ls')")
     assert sc.dangerous_call_lines("eval('1')")
     assert not sc.dangerous_call_lines("os.path.join('a')")
+
+
+# ---------------------------------------------------------------- Phase 2: read side
+
+
+def test_adapters_never_import_actions():
+    assert _scan(("adapters",), lambda p: sc.forbidden_import_violations(sc.imports_of(p), ("actions",))) == []
+
+
+def test_application_code_never_imports_demo_fakes():
+    dirs = ("core", "agent", "tools", "security", "adapters", "actions")
+    assert _scan(dirs, lambda p: sc.forbidden_import_violations(sc.imports_of(p), ("demo", "tests"))) == []
+
+
+def test_only_airflow_adapter_speaks_http_on_the_read_side():
+    def check(path):
+        if path.relative_to(sc.REPO_ROOT).as_posix().startswith("adapters/airflow/"):
+            return []
+        return sc.forbidden_import_violations(sc.imports_of(path), ("httpx", "requests", "aiohttp", "urllib3"))
+
+    assert _scan(("adapters", "core", "tools", "agent", "security"), check) == []
+
+
+# ---------------------------------------------------------------- Phase 5: persistence, API, UI, notifications
+
+
+def test_frontend_is_a_pure_http_client():
+    server_side = ("api", "actions", "core", "database", "agent", "adapters", "security", "tools", "demo",
+                   "notifications")
+    assert sc.python_files("frontend"), "frontend not found"
+    assert _scan(("frontend",), lambda p: sc.forbidden_import_violations(sc.imports_of(p), server_side)) == []
+
+
+def test_investigation_side_never_imports_api_database_or_notifications():
+    forbidden = ("api", "database", "notifications")
+    assert _scan(INVESTIGATION_SIDE, lambda p: sc.forbidden_import_violations(sc.imports_of(p), forbidden)) == []
+
+
+def test_persistence_and_notifications_cannot_reach_the_executor_or_platform_http():
+    assert _scan(("database",), lambda p: sc.forbidden_import_violations(
+        sc.imports_of(p), ("httpx", "requests", "actions.executor", "actions.airflow_actions"))) == []
+    assert _scan(("notifications",), lambda p: sc.forbidden_import_violations(sc.imports_of(p), ("actions",))) == []

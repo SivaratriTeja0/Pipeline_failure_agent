@@ -1,0 +1,36 @@
+{
+  "task_instances": [
+    {
+      "task_id": "other",
+      "task_display_name": "transform",
+      "dag_id": "inventory",
+      "dag_run_id": "scheduled__2026-10-01T10:30:00+00:00",
+      "execution_date": "2026-10-01T10:00:00+00:00",
+      "start_date": "2026-10-01T10:00:05.123456+00:00",
+      "end_date": "2026-10-01T10:01:07.000000+00:00",
+      "duration": 61.877,
+      "state": "success",
+      "try_number": 1,
+      "map_index": -1,
+      "max_tries": 1,
+      "hostname": "airflow-worker-0",
+      "unixname": "airflow",
+      "pool": "default_pool",
+      "pool_slots": 1,
+      "queue": "default",
+      "priority_weight": 3,
+      "operator": "PythonOperator",
+      "queued_when": "2026-10-01T10:00:03+00:00",
+      "pid": 4242,
+      "executor": null,
+      "executor_config": "{}",
+      "sla_miss": null,
+      "rendered_map_index": null,
+      "rendered_fields": {},
+      "trigger": null,
+      "triggerer_job": null,
+      "note": null
+    }
+  ],
+  "total_entries": 1
+}

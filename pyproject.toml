@@ -8,3 +8,7 @@ requires-python = ">=3.11"
 pythonpath = ["."]
 testpaths = ["tests"]
 addopts = "-q --strict-markers"
+filterwarnings = [
+    # starlette's TestClient (used only to run FAKE AIRFLOW in-process) nudges toward httpx2.
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]

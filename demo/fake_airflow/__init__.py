@@ -1,1 +1,1 @@
-"""FAKE AIRFLOW (DEMO) server (Phase 2/4)."""
+"""FAKE AIRFLOW (DEMO) server. Everything served here is mock data and labeled as such."""

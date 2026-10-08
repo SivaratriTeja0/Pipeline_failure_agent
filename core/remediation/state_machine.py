@@ -35,7 +35,10 @@ TRANSITIONS: MappingProxyType[IncidentState, frozenset[IncidentState]] = Mapping
         S.AWAITING_APPROVAL: frozenset(
             {S.APPROVED, S.REJECTED, S.EXPIRED, S.CANCELLED, S.PLAN_PROPOSED, S.BLOCKED}
         ),
-        S.APPROVED: frozenset({S.POLICY_VALIDATING, S.EXPIRED, S.CANCELLED, S.PLAN_PROPOSED, S.BLOCKED}),
+        # Reject and cancel stay available until dispatch.
+        S.APPROVED: frozenset(
+            {S.POLICY_VALIDATING, S.REJECTED, S.EXPIRED, S.CANCELLED, S.PLAN_PROPOSED, S.BLOCKED}
+        ),
         S.REJECTED: _PLAN_TERMINAL_EXITS,
         S.EXPIRED: _PLAN_TERMINAL_EXITS,
         S.CANCELLED: _PLAN_TERMINAL_EXITS,

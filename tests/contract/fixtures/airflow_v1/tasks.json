@@ -1,0 +1,83 @@
+{
+  "tasks": [
+    {
+      "class_ref": {
+        "class_name": "PythonOperator",
+        "module_path": "airflow.operators.python"
+      },
+      "task_id": "extract",
+      "task_display_name": "extract",
+      "owner": "data-eng",
+      "start_date": "2026-01-01T00:00:00+00:00",
+      "end_date": null,
+      "trigger_rule": "all_success",
+      "extra_links": [],
+      "depends_on_past": false,
+      "is_mapped": false,
+      "wait_for_downstream": false,
+      "retries": 1.0,
+      "queue": "default",
+      "executor": null,
+      "pool": "default_pool",
+      "pool_slots": 1.0,
+      "execution_timeout": null,
+      "retry_delay": {
+        "__type": "TimeDelta",
+        "days": 0,
+        "seconds": 300,
+        "microseconds": 0
+      },
+      "retry_exponential_backoff": false,
+      "priority_weight": 1.0,
+      "weight_rule": "downstream",
+      "ui_color": "#ffefeb",
+      "ui_fgcolor": "#000",
+      "template_fields": [
+        "templates_dict"
+      ],
+      "sub_dag": null,
+      "downstream_task_ids": [
+        "transform"
+      ],
+      "doc_md": null
+    },
+    {
+      "class_ref": {
+        "class_name": "PythonOperator",
+        "module_path": "airflow.operators.python"
+      },
+      "task_id": "transform",
+      "task_display_name": "transform",
+      "owner": "data-eng",
+      "start_date": "2026-01-01T00:00:00+00:00",
+      "end_date": null,
+      "trigger_rule": "all_success",
+      "extra_links": [],
+      "depends_on_past": false,
+      "is_mapped": true,
+      "wait_for_downstream": false,
+      "retries": 1.0,
+      "queue": "default",
+      "executor": null,
+      "pool": "default_pool",
+      "pool_slots": 1.0,
+      "execution_timeout": {
+        "__type": "TimeDelta",
+        "days": 0,
+        "seconds": 3600,
+        "microseconds": 0
+      },
+      "retry_delay": null,
+      "retry_exponential_backoff": false,
+      "priority_weight": 1.0,
+      "weight_rule": "downstream",
+      "ui_color": "#ffefeb",
+      "ui_fgcolor": "#000",
+      "template_fields": [],
+      "sub_dag": null,
+      "downstream_task_ids": [],
+      "doc_md": null
+    }
+  ],
+  "total_entries": 2
+}

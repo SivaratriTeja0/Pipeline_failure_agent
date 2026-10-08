@@ -50,7 +50,7 @@ def test_no_bare_pass_or_not_implemented_outside_abstract_methods():
 
 FORBIDDEN_OPERATION_PATTERNS = [
     r"dagRuns\b.*\bpost\b",               # trigger new DAG run
-    r"\bis_paused\b",                      # pause / unpause
+    r"\b(un)?pause_dag\b|\.(patch|post|put)\([^)]*is_paused",   # pause / unpause (reading is_paused is fine)
     r"\bset_state\b|\bmark_success\b|\bmark_failed\b",
     r"/variables\b|/connections\b",
     r"/xcomEntries\b.*\b(post|patch)\b",

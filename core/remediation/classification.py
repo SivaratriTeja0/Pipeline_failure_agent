@@ -4,6 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from core.evidence.conventions import CAUSE_CLEARED_FOR, FIX_ATTESTATION
 from core.models.enums import (
     ConfidenceLevel,
     EvidenceCategory,
@@ -49,11 +50,29 @@ def check_cause_cleared(
     whose evidence category can demonstrate the cause changed for this failure category.
 
     Without a known failure time nothing can be proven to be 'after', so nothing is accepted.
+    A candidate that declares ``cause_cleared_for`` speaks only to those failure categories.
+    A human fix attestation (L10) is accepted only for manual-fix categories, where the fix
+    happens outside the system; it never stands in for evidence of a transient cause clearing.
     """
     result = CauseClearedResult()
     allowed = CAUSE_CLEARED_CATEGORIES.get(category, frozenset())
     for item in candidates:
         eid = item.evidence_id
+        scoped = item.metadata.get(CAUSE_CLEARED_FOR)
+        attested = item.metadata.get(FIX_ATTESTATION) is True
+        if isinstance(scoped, list) and category.value not in scoped:
+            result.rejected[eid] = f"candidate speaks only to {scoped}, not {category.value}"
+            continue
+        if attested:
+            if category not in MANUAL_CATEGORIES:
+                result.rejected[eid] = f"a fix attestation cannot show a {category.value} cause cleared"
+            elif failure_time is None or item.temporal_label is not TemporalLabel.CURRENT:
+                result.rejected[eid] = "attestation is not CURRENT or the failure time is unknown"
+            elif item.provenance.collected_at <= failure_time:
+                result.rejected[eid] = "attestation recorded before the failure"
+            else:
+                result.accepted_ids.append(eid)
+            continue
         if failure_time is None:
             result.rejected[eid] = "failure time unknown; cannot prove evidence is after the failure"
         elif item.temporal_label is not TemporalLabel.CURRENT:
@@ -107,6 +126,7 @@ class ClassificationInput(BaseModel):
     dq_target_corrupted: bool | None = None
     dq_bad_records_quarantined: bool | None = None
     overlapping_run_active: bool | None = None
+    fix_attested: bool = False
 
 
 class ClassificationResult(BaseModel):
@@ -158,7 +178,12 @@ def classify_remediation(inp: ClassificationInput) -> ClassificationResult:
             reason="root cause unknown; no plan",
         )
 
-    if inp.category in MANUAL_CATEGORIES or not _is_automatable_category(inp.category, inp.subcategory):
+    # L10 manual-fix loop: once an engineer attests the fix, a manual-category failure may be
+    # re-run, but only through every remaining gate below (safety, cause cleared, confidence).
+    attested_manual = inp.fix_attested and inp.category in MANUAL_CATEGORIES
+    if not attested_manual and (
+        inp.category in MANUAL_CATEGORIES or not _is_automatable_category(inp.category, inp.subcategory)
+    ):
         return ClassificationResult(
             remediation_class=R.MANUAL_FIX_REQUIRED,
             rule="L1.manual_category",
@@ -196,5 +221,6 @@ def classify_remediation(inp: ClassificationInput) -> ClassificationResult:
     return ClassificationResult(
         remediation_class=R.AUTOMATABLE,
         rule="L1.automatable",
-        reason="automatable category, cause cleared, rerun safety and remediation confidence permit a plan",
+        reason=("engineer attested the fix; " if attested_manual else "automatable category, ")
+        + "cause cleared, rerun safety and remediation confidence permit a plan",
     )
