@@ -1,0 +1,21 @@
+# LOCAL, THROWAWAY Airflow for the first LIVE test of the healing path. Never point the agent at shared or
+# production Airflow until the full test suite and this local run pass.
+#
+# Pinned: apache/airflow:2.10.5 (REST API v1; basic-auth API backend enabled below).
+#   docker compose -f demo/live_test/docker-compose.yml up -d
+#   docker compose -f demo/live_test/docker-compose.yml exec airflow bash /opt/live_test/setup_users.sh
+services:
+  airflow:
+    image: apache/airflow:2.10.5-python3.12
+    command: standalone
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+      AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "false"
+      PYTHONPATH: /opt/airflow/dags
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./setup_users.sh:/opt/live_test/setup_users.sh:ro
